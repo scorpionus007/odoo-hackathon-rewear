@@ -1,7 +1,6 @@
 const { validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { v4: uuidv4 } = require('uuid');
 const { User } = require('../models');
 const { sendEmail } = require('../services/emailService');
 
@@ -34,7 +33,6 @@ const register = async (req, res) => {
 
     // Create user
     const user = await User.create({
-      id: uuidv4(),
       firstName,
       lastName,
       email,

@@ -26,8 +26,7 @@ const registerValidation = [
     .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
     .withMessage('Password must be at least 8 characters and contain uppercase, lowercase, number, and special character'),
   body('phone')
-    .optional()
-    .matches(/^\+?[\d\s-()]+$/)
+    .matches(/^[\+]?[1-9][\d]{0,15}$/)
     .withMessage('Invalid phone number format')
 ];
 
@@ -94,6 +93,7 @@ const refreshTokenValidation = [
  *               - lastName
  *               - email
  *               - password
+ *               - phone
  *             properties:
  *               firstName:
  *                 type: string

@@ -4,7 +4,8 @@ const { param, query, body } = require('express-validator');
 
 // Import controller and middleware
 const badgeController = require('../controllers/badgeController');
-const { authenticateToken, authorizeRoles } = require('../middleware/auth');
+const { authenticateToken } = require('../middleware/auth');
+const RoleMiddleware = require('../middleware/roleMiddleware');
 const { validateRequest } = require('../middleware/validation');
 
 // Validation rules
@@ -120,7 +121,8 @@ const queryValidation = [
  */
 router.get('/',
   authenticateToken,
-  authorizeRoles(['admin']),
+  RoleMiddleware.debugUserRole, // Debug middleware to log role info
+  RoleMiddleware.isAdmin,
   queryValidation,
   validateRequest,
   badgeController.getAllBadges
@@ -304,7 +306,7 @@ router.get('/user/:userId',
  */
 router.post('/award',
   authenticateToken,
-  authorizeRoles(['admin']),
+  RoleMiddleware.isAdmin,
   [
     body('userId')
       .isUUID()

@@ -346,6 +346,101 @@ class AdminController {
       next(error);
     }
   }
+
+  // Ensure admin user exists
+  static async ensureAdminUser(req, res, next) {
+    try {
+      const bcrypt = require('bcryptjs');
+      const { ROLE_IDS } = require('../constants');
+      
+      // Check if admin user exists
+      let adminUser = await User.findOne({ where: { email: 'admin@rewear.com' } });
+      
+      if (!adminUser) {
+        // Hash the password
+        const hashedPassword = await bcrypt.hash('Password@111', 12);
+        
+        // Create admin user
+        adminUser = await User.create({
+          firstName: 'Admin',
+          lastName: 'User',
+          email: 'admin@rewear.com',
+          phone: '1234567890',
+          password: hashedPassword,
+          role: 'admin',
+          roleId: ROLE_IDS.ADMIN,
+          isVerified: true,
+          isActive: true
+        });
+        
+        res.json({
+          success: true,
+          message: 'Admin user created successfully',
+          data: {
+            id: adminUser.id,
+            email: adminUser.email,
+            role: adminUser.role,
+            roleId: adminUser.roleId,
+            isVerified: adminUser.isVerified,
+            isActive: adminUser.isActive,
+            createdAt: adminUser.createdAt
+          },
+          credentials: {
+            email: 'admin@rewear.com',
+            password: 'Password@111'
+          }
+        });
+      } else {
+        // Check if the role is correct
+        if (adminUser.role !== 'admin' || adminUser.roleId !== ROLE_IDS.ADMIN) {
+          await adminUser.update({
+            role: 'admin',
+            roleId: ROLE_IDS.ADMIN,
+            isVerified: true,
+            isActive: true
+          });
+          
+          res.json({
+            success: true,
+            message: 'Admin user role updated successfully',
+            data: {
+              id: adminUser.id,
+              email: adminUser.email,
+              role: adminUser.role,
+              roleId: adminUser.roleId,
+              isVerified: adminUser.isVerified,
+              isActive: adminUser.isActive,
+              updatedAt: adminUser.updatedAt
+            },
+            credentials: {
+              email: 'admin@rewear.com',
+              password: 'Password@111'
+            }
+          });
+        } else {
+          res.json({
+            success: true,
+            message: 'Admin user already exists with correct role',
+            data: {
+              id: adminUser.id,
+              email: adminUser.email,
+              role: adminUser.role,
+              roleId: adminUser.roleId,
+              isVerified: adminUser.isVerified,
+              isActive: adminUser.isActive,
+              createdAt: adminUser.createdAt
+            },
+            credentials: {
+              email: 'admin@rewear.com',
+              password: 'Password@111'
+            }
+          });
+        }
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 module.exports = AdminController; 

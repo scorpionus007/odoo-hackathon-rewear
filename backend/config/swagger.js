@@ -18,11 +18,11 @@ const options = {
     },
     servers: [
       {
-        url: 'http://localhost:3456',
+        url: 'http://localhost:3456/api',
         description: 'Development server',
       },
       {
-        url: 'https://api.rewear.com',
+        url: 'https://api.rewear.com/api',
         description: 'Production server',
       },
     ],

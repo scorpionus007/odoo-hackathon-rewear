@@ -4,7 +4,8 @@ const { body, param, query } = require('express-validator');
 
 // Import controller and middleware
 const rewardsController = require('../controllers/rewardsController');
-const { authenticateToken, authorizeRoles } = require('../middleware/auth');
+const { authenticateToken } = require('../middleware/auth');
+const RoleMiddleware = require('../middleware/roleMiddleware');
 const { validateRequest } = require('../middleware/validation');
 
 // Validation rules
@@ -332,7 +333,7 @@ router.get('/:id',
  */
 router.post('/',
   authenticateToken,
-  authorizeRoles(['admin']),
+  RoleMiddleware.isAdmin,
   createRewardValidation,
   validateRequest,
   rewardsController.createReward
@@ -427,7 +428,7 @@ router.post('/',
  */
 router.put('/:id',
   authenticateToken,
-  authorizeRoles(['admin']),
+  RoleMiddleware.isAdmin,
   updateRewardValidation,
   validateRequest,
   rewardsController.updateReward
@@ -483,7 +484,7 @@ router.put('/:id',
  */
 router.delete('/:id',
   authenticateToken,
-  authorizeRoles(['admin']),
+  RoleMiddleware.isAdmin,
   rewardIdValidation,
   validateRequest,
   rewardsController.deleteReward

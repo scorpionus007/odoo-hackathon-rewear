@@ -15,7 +15,9 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "seed": "node backend/seeders/seedDatabase.js",
-    "test:api": "node backend/tests/testEndpoints.js"
+    "test:api": "node backend/tests/testEndpoints.js",
+    "ensure-admin": "node backend/scripts/ensureAdmin.js",
+    "test-admin": "node backend/scripts/testAdmin.js"
   },
   "keywords": [
     "rewear",
