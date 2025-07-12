@@ -6,7 +6,7 @@ import { HelmetProvider } from 'react-helmet-async';
 
 // Context Providers
 import { AuthProvider } from './contexts/AuthContext';
-import { ThemeProvider } from './contexts/ThemeContext';
+// import { ThemeProvider } from './contexts/ThemeContext';
 
 // Components
 // import Layout from './components/Layout/Layout';
@@ -41,11 +41,11 @@ function App() {
   return (
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
-        <ThemeProvider>
-          <AuthProvider>
-            <Router>
+        <Router>
+          {/* <ThemeProvider> */}
+            <AuthProvider>
               <div className="App">
-                                <Routes>
+                <Routes>
                   {/* Public Routes */}
                   <Route path="/" element={<Home />} />
                   <Route path="login" element={<Login />} />
@@ -94,9 +94,9 @@ function App() {
                   }}
                 />
               </div>
-            </Router>
-          </AuthProvider>
-        </ThemeProvider>
+            </AuthProvider>
+          {/* </ThemeProvider> */}
+        </Router>
       </QueryClientProvider>
     </HelmetProvider>
   );
