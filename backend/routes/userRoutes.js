@@ -4,7 +4,9 @@ const { body, param, query } = require('express-validator');
 
 // Import controller and middleware
 const userController = require('../controllers/userController');
-const { authenticateToken, authorizeRoles } = require('../middleware/auth');
+const AdminController = require('../controllers/adminController');
+const { authenticateToken } = require('../middleware/auth');
+const RoleMiddleware = require('../middleware/roleMiddleware');
 const { validateRequest } = require('../middleware/validation');
 
 // Validation rules
@@ -183,7 +185,8 @@ const queryValidation = [
  */
 router.get('/',
   authenticateToken,
-  authorizeRoles(['admin']),
+  RoleMiddleware.debugUserRole, // Debug middleware to log role info
+  RoleMiddleware.isAdmin,
   queryValidation,
   validateRequest,
   userController.getAllUsers
@@ -386,7 +389,7 @@ router.put('/:id',
  */
 router.delete('/:id',
   authenticateToken,
-  authorizeRoles(['admin']),
+  RoleMiddleware.isAdmin,
   userIdValidation,
   validateRequest,
   userController.deleteUser
@@ -445,7 +448,7 @@ router.delete('/:id',
  */
 router.post('/:id/verify',
   authenticateToken,
-  authorizeRoles(['admin']),
+  RoleMiddleware.isAdmin,
   userIdValidation,
   validateRequest,
   userController.verifyUser
@@ -504,7 +507,7 @@ router.post('/:id/verify',
  */
 router.post('/:id/deactivate',
   authenticateToken,
-  authorizeRoles(['admin']),
+  RoleMiddleware.isAdmin,
   userIdValidation,
   validateRequest,
   userController.deactivateUser
@@ -563,7 +566,7 @@ router.post('/:id/deactivate',
  */
 router.post('/:id/activate',
   authenticateToken,
-  authorizeRoles(['admin']),
+  RoleMiddleware.isAdmin,
   userIdValidation,
   validateRequest,
   userController.activateUser
@@ -646,6 +649,71 @@ router.get('/:id/stats',
   userIdValidation,
   validateRequest,
   userController.getUserStats
+);
+
+/**
+ * @swagger
+ * /users/ensure-admin:
+ *   post:
+ *     summary: Ensure admin user exists (Admin only)
+ *     tags: [Users]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Admin user ensured successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Admin user created/updated successfully
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     email:
+ *                       type: string
+ *                     role:
+ *                       type: string
+ *                     roleId:
+ *                       type: integer
+ *                     isVerified:
+ *                       type: boolean
+ *                     isActive:
+ *                       type: boolean
+ *                 credentials:
+ *                   type: object
+ *                   properties:
+ *                     email:
+ *                       type: string
+ *                       example: admin@rewear.com
+ *                     password:
+ *                       type: string
+ *                       example: Password@111
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - Admin access required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.post('/ensure-admin',
+  authenticateToken,
+  RoleMiddleware.isAdmin,
+  AdminController.ensureAdminUser
 );
 
 module.exports = router; 

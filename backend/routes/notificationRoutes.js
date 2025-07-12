@@ -4,7 +4,8 @@ const { body, param, query } = require('express-validator');
 
 // Import controller and middleware
 const notificationController = require('../controllers/notificationController');
-const { authenticateToken, authorizeRoles } = require('../middleware/auth');
+const { authenticateToken } = require('../middleware/auth');
+const RoleMiddleware = require('../middleware/roleMiddleware');
 const { validateRequest } = require('../middleware/validation');
 
 // Validation rules
@@ -199,7 +200,8 @@ const queryValidation = [
  */
 router.get('/',
   authenticateToken,
-  authorizeRoles(['admin']),
+  RoleMiddleware.debugUserRole, // Debug middleware to log role info
+  RoleMiddleware.isAdmin,
   queryValidation,
   validateRequest,
   notificationController.getAllNotifications
@@ -467,7 +469,8 @@ router.get('/:id',
  */
 router.post('/',
   authenticateToken,
-  authorizeRoles(['admin']),
+  RoleMiddleware.debugUserRole, // Debug middleware to log role info
+  RoleMiddleware.isAdmin,
   createNotificationValidation,
   validateRequest,
   notificationController.createNotification
