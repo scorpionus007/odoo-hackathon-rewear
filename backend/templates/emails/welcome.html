@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to ReWear!</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 10px;
+        }
+        .welcome-box {
+            background-color: #e8f5e8;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .button {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🌱 ReWear</div>
+            <h2>Welcome to ReWear!</h2>
+        </div>
+        
+        <p>Hello {{firstName}},</p>
+        
+        <div class="welcome-box">
+            <h3>🎉 Welcome to the ReWear Community!</h3>
+            <p>You've just joined thousands of eco-conscious individuals who are making a difference through sustainable fashion.</p>
+        </div>
+        
+        <h3>What you can do with ReWear:</h3>
+        <ul>
+            <li>🔄 <strong>Swap clothes</strong> with other community members</li>
+            <li>🌱 <strong>Earn eco points</strong> for sustainable actions</li>
+            <li>🏆 <strong>Unlock badges</strong> and achievements</li>
+            <li>🎁 <strong>Redeem rewards</strong> from our partner brands</li>
+            <li>💧 <strong>Track your impact</strong> on water and CO2 savings</li>
+        </ul>
+        
+        <p><strong>Ready to start?</strong></p>
+        <p>Upload your first item and start swapping with the community!</p>
+        
+        <div style="text-align: center;">
+            <a href="{{loginUrl}}" class="button">Get Started</a>
+        </div>
+        
+        <p>If you have any questions or need help getting started, feel free to reach out to our support team at <a href="mailto:{{supportEmail}}">{{supportEmail}}</a>.</p>
+        
+        <p>Happy swapping!<br>The ReWear Team</p>
+        
+        <div class="footer">
+            <p>Thank you for joining the sustainable fashion revolution!</p>
+            <p>&copy; 2024 ReWear. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html> 

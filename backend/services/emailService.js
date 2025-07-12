@@ -1,109 +1,235 @@
 const nodemailer = require('nodemailer');
+const fs = require('fs').promises;
+const path = require('path');
 
-class EmailService {
-  constructor() {
-    this.transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: process.env.SMTP_PORT,
-      secure: false, // true for 465, false for other ports
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
+// Create transporter
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT,
+  secure: process.env.SMTP_SECURE === 'true',
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS
+  }
+});
+
+/**
+ * Send email with template
+ * @param {Object} options - Email options
+ * @param {string} options.to - Recipient email
+ * @param {string} options.subject - Email subject
+ * @param {string} options.template - Template name
+ * @param {Object} options.data - Template data
+ * @returns {Promise<Object>} Send result
+ */
+const sendEmail = async ({ to, subject, template, data }) => {
+  try {
+    // Read template file
+    const templatePath = path.join(__dirname, '../templates/emails', `${template}.html`);
+    let htmlContent = await fs.readFile(templatePath, 'utf8');
+
+    // Replace template variables
+    Object.keys(data).forEach(key => {
+      const regex = new RegExp(`{{${key}}}`, 'g');
+      htmlContent = htmlContent.replace(regex, data[key]);
     });
-  }
 
-  // Generate OTP
-  static generateOTP() {
-    return Math.floor(100000 + Math.random() * 900000).toString();
-  }
-
-  // Send OTP email
-  async sendOTPEmail(email, otp) {
+    // Send email
     const mailOptions = {
-      from: process.env.EMAIL_FROM,
-      to: email,
-      subject: 'ReWear - Password Reset OTP',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <div style="background-color: #16a34a; color: white; padding: 20px; text-align: center;">
-            <h1>ReWear</h1>
-            <p>Community Clothing Exchange Platform</p>
-          </div>
-          <div style="padding: 20px; background-color: #f9f9f9;">
-            <h2>Password Reset Request</h2>
-            <p>You have requested to reset your password. Use the following OTP to complete the process:</p>
-            <div style="background-color: #16a34a; color: white; padding: 15px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 5px; margin: 20px 0;">
-              ${otp}
-            </div>
-            <p><strong>Important:</strong></p>
-            <ul>
-              <li>This OTP is valid for 10 minutes only</li>
-              <li>Do not share this OTP with anyone</li>
-              <li>If you didn't request this, please ignore this email</li>
-            </ul>
-            <p>Best regards,<br>Team ReWear</p>
-          </div>
-          <div style="background-color: #333; color: white; padding: 10px; text-align: center; font-size: 12px;">
-            <p>This is an automated email. Please do not reply.</p>
-          </div>
-        </div>
-      `,
+      from: process.env.SMTP_FROM || process.env.SMTP_USER,
+      to,
+      subject,
+      html: htmlContent
     };
 
-    try {
-      const info = await this.transporter.sendMail(mailOptions);
-      console.log('Email sent: ', info.messageId);
-      return true;
-    } catch (error) {
-      console.error('Error sending email: ', error);
-      throw new Error('Failed to send email');
-    }
+    const result = await transporter.sendMail(mailOptions);
+    return result;
+  } catch (error) {
+    console.error('Email sending error:', error);
+    throw new Error(`Failed to send email: ${error.message}`);
   }
+};
 
-  // Send welcome email
-  async sendWelcomeEmail(email, firstName) {
-    const mailOptions = {
-      from: process.env.EMAIL_FROM,
-      to: email,
-      subject: 'Welcome to ReWear!',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <div style="background-color: #16a34a; color: white; padding: 20px; text-align: center;">
-            <h1>Welcome to ReWear!</h1>
-            <p>Community Clothing Exchange Platform</p>
-          </div>
-          <div style="padding: 20px; background-color: #f9f9f9;">
-            <h2>Hello ${firstName}!</h2>
-            <p>Welcome to ReWear! You've successfully joined our community of sustainable fashion enthusiasts.</p>
-            <p>Here's what you can do:</p>
-            <ul>
-              <li>Upload your clothes for swapping</li>
-              <li>Browse items from other community members</li>
-              <li>Make swap requests</li>
-              <li>Track your eco-impact</li>
-              <li>Earn points for sustainable actions</li>
-            </ul>
-            <p>Start your sustainable fashion journey today!</p>
-            <p>Best regards,<br>Team ReWear</p>
-          </div>
-          <div style="background-color: #333; color: white; padding: 10px; text-align: center; font-size: 12px;">
-            <p>This is an automated email. Please do not reply.</p>
-          </div>
-        </div>
-      `,
-    };
-
-    try {
-      const info = await this.transporter.sendMail(mailOptions);
-      console.log('Welcome email sent: ', info.messageId);
-      return true;
-    } catch (error) {
-      console.error('Error sending welcome email: ', error);
-      // Don't throw error for welcome email
-      return false;
+/**
+ * Send password reset email
+ * @param {string} to - Recipient email
+ * @param {string} firstName - User's first name
+ * @param {string} otp - OTP code
+ * @returns {Promise<Object>} Send result
+ */
+const sendPasswordResetEmail = async (to, firstName, otp) => {
+  return sendEmail({
+    to,
+    subject: 'Password Reset OTP - ReWear',
+    template: 'passwordReset',
+    data: {
+      firstName,
+      otp,
+      expiryMinutes: 10,
+      appName: 'ReWear',
+      supportEmail: process.env.SUPPORT_EMAIL || 'support@rewear.com'
     }
-  }
-}
+  });
+};
 
-module.exports = EmailService; 
+/**
+ * Send welcome email
+ * @param {string} to - Recipient email
+ * @param {string} firstName - User's first name
+ * @returns {Promise<Object>} Send result
+ */
+const sendWelcomeEmail = async (to, firstName) => {
+  return sendEmail({
+    to,
+    subject: 'Welcome to ReWear!',
+    template: 'welcome',
+    data: {
+      firstName,
+      appName: 'ReWear',
+      loginUrl: `${process.env.FRONTEND_URL}/login`,
+      supportEmail: process.env.SUPPORT_EMAIL || 'support@rewear.com'
+    }
+  });
+};
+
+/**
+ * Send swap offer notification email
+ * @param {string} to - Recipient email
+ * @param {string} firstName - Recipient's first name
+ * @param {string} fromName - Sender's name
+ * @param {string} itemTitle - Item title
+ * @returns {Promise<Object>} Send result
+ */
+const sendSwapOfferEmail = async (to, firstName, fromName, itemTitle) => {
+  return sendEmail({
+    to,
+    subject: `New Swap Offer for ${itemTitle} - ReWear`,
+    template: 'swapOffer',
+    data: {
+      firstName,
+      fromName,
+      itemTitle,
+      appName: 'ReWear',
+      dashboardUrl: `${process.env.FRONTEND_URL}/dashboard`,
+      supportEmail: process.env.SUPPORT_EMAIL || 'support@rewear.com'
+    }
+  });
+};
+
+/**
+ * Send swap accepted email
+ * @param {string} to - Recipient email
+ * @param {string} firstName - Recipient's first name
+ * @param {string} itemTitle - Item title
+ * @returns {Promise<Object>} Send result
+ */
+const sendSwapAcceptedEmail = async (to, firstName, itemTitle) => {
+  return sendEmail({
+    to,
+    subject: `Swap Accepted for ${itemTitle} - ReWear`,
+    template: 'swapAccepted',
+    data: {
+      firstName,
+      itemTitle,
+      appName: 'ReWear',
+      dashboardUrl: `${process.env.FRONTEND_URL}/dashboard`,
+      supportEmail: process.env.SUPPORT_EMAIL || 'support@rewear.com'
+    }
+  });
+};
+
+/**
+ * Send badge awarded email
+ * @param {string} to - Recipient email
+ * @param {string} firstName - Recipient's first name
+ * @param {string} badgeType - Badge type
+ * @returns {Promise<Object>} Send result
+ */
+const sendBadgeAwardedEmail = async (to, firstName, badgeType) => {
+  return sendEmail({
+    to,
+    subject: `Congratulations! You've earned the ${badgeType} badge - ReWear`,
+    template: 'badgeAwarded',
+    data: {
+      firstName,
+      badgeType,
+      appName: 'ReWear',
+      dashboardUrl: `${process.env.FRONTEND_URL}/dashboard`,
+      supportEmail: process.env.SUPPORT_EMAIL || 'support@rewear.com'
+    }
+  });
+};
+
+/**
+ * Send reward redeemed email
+ * @param {string} to - Recipient email
+ * @param {string} firstName - Recipient's first name
+ * @param {string} rewardTitle - Reward title
+ * @param {number} pointsSpent - Points spent
+ * @returns {Promise<Object>} Send result
+ */
+const sendRewardRedeemedEmail = async (to, firstName, rewardTitle, pointsSpent) => {
+  return sendEmail({
+    to,
+    subject: `Reward Redeemed: ${rewardTitle} - ReWear`,
+    template: 'rewardRedeemed',
+    data: {
+      firstName,
+      rewardTitle,
+      pointsSpent,
+      appName: 'ReWear',
+      dashboardUrl: `${process.env.FRONTEND_URL}/dashboard`,
+      supportEmail: process.env.SUPPORT_EMAIL || 'support@rewear.com'
+    }
+  });
+};
+
+/**
+ * Send general notification email
+ * @param {string} to - Recipient email
+ * @param {string} firstName - Recipient's first name
+ * @param {string} title - Notification title
+ * @param {string} message - Notification message
+ * @returns {Promise<Object>} Send result
+ */
+const sendNotificationEmail = async (to, firstName, title, message) => {
+  return sendEmail({
+    to,
+    subject: `${title} - ReWear`,
+    template: 'notification',
+    data: {
+      firstName,
+      title,
+      message,
+      appName: 'ReWear',
+      dashboardUrl: `${process.env.FRONTEND_URL}/dashboard`,
+      supportEmail: process.env.SUPPORT_EMAIL || 'support@rewear.com'
+    }
+  });
+};
+
+/**
+ * Verify email configuration
+ * @returns {Promise<boolean>} Configuration status
+ */
+const verifyEmailConfig = async () => {
+  try {
+    await transporter.verify();
+    return true;
+  } catch (error) {
+    console.error('Email configuration error:', error);
+    return false;
+  }
+};
+
+module.exports = {
+  sendEmail,
+  sendPasswordResetEmail,
+  sendWelcomeEmail,
+  sendSwapOfferEmail,
+  sendSwapAcceptedEmail,
+  sendBadgeAwardedEmail,
+  sendRewardRedeemedEmail,
+  sendNotificationEmail,
+  verifyEmailConfig
+}; 

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reward Redeemed - ReWear</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 10px;
+        }
+        .reward-box {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            border-radius: 8px;
+            padding: 30px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .reward-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        .points {
+            font-size: 24px;
+            font-weight: bold;
+            color: #e67e22;
+        }
+        .button {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🌱 ReWear</div>
+            <h2>🎁 Reward Redeemed!</h2>
+        </div>
+        
+        <p>Hello {{firstName}},</p>
+        
+        <div class="reward-box">
+            <div class="reward-icon">🎁</div>
+            <h3>Congratulations!</h3>
+            <p>You've successfully redeemed: <strong>{{rewardTitle}}</strong></p>
+            <p class="points">{{pointsSpent}} points spent</p>
+        </div>
+        
+        <p>Your reward details have been saved to your account. You can view all your active redemptions in your dashboard.</p>
+        
+        <div style="text-align: center;">
+            <a href="{{dashboardUrl}}" class="button">View My Rewards</a>
+        </div>
+        
+        <p><strong>What's next?</strong></p>
+        <ul>
+            <li>Use your reward according to the terms and conditions</li>
+            <li>Continue earning points through sustainable actions</li>
+            <li>Explore more rewards in our catalog</li>
+        </ul>
+        
+        <p>Thank you for being part of the sustainable fashion movement!</p>
+        
+        <p>If you have any questions about your reward, feel free to reach out to our support team at <a href="mailto:{{supportEmail}}">{{supportEmail}}</a>.</p>
+        
+        <p>Enjoy your reward!<br>The ReWear Team</p>
+        
+        <div class="footer">
+            <p>You're receiving this email because you've redeemed a reward.</p>
+            <p>&copy; 2024 ReWear. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html> 

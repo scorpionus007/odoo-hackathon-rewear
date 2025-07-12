@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Badge Awarded - ReWear</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 10px;
+        }
+        .badge-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
+            padding: 30px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .badge-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🌱 ReWear</div>
+            <h2>🏆 Achievement Unlocked!</h2>
+        </div>
+        
+        <p>Hello {{firstName}},</p>
+        
+        <div class="badge-box">
+            <div class="badge-icon">🏆</div>
+            <h3>Congratulations!</h3>
+            <p>You've earned the <strong>{{badgeType}}</strong> badge!</p>
+            <p>Your dedication to sustainable fashion is making a real difference.</p>
+        </div>
+        
+        <p>This badge represents your commitment to:</p>
+        <ul>
+            <li>🌱 Reducing fashion waste</li>
+            <li>💧 Saving water resources</li>
+            <li>🌍 Lowering carbon footprint</li>
+            <li>🤝 Building a sustainable community</li>
+        </ul>
+        
+        <div style="text-align: center;">
+            <a href="{{dashboardUrl}}" class="button">View Your Badges</a>
+        </div>
+        
+        <p>Keep up the great work! Every swap and sustainable choice counts towards a better future.</p>
+        
+        <p>If you have any questions, feel free to reach out to our support team at <a href="mailto:{{supportEmail}}">{{supportEmail}}</a>.</p>
+        
+        <p>Keep making a difference!<br>The ReWear Team</p>
+        
+        <div class="footer">
+            <p>You're receiving this email because you've earned a new badge.</p>
+            <p>&copy; 2024 ReWear. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html> 

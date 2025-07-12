@@ -1,79 +1,100 @@
+/**
+ * Global error handler middleware
+ */
 const errorHandler = (err, req, res, next) => {
-  let error = { ...err };
-  error.message = err.message;
+  console.error('Error:', err);
 
-  // Log error for debugging
-  console.error('Error:', {
-    message: err.message,
-    stack: err.stack,
-    url: req.url,
-    method: req.method,
-    body: req.body,
-    user: req.user?.id
-  });
-
-  // Sequelize validation error
+  // Sequelize validation errors
   if (err.name === 'SequelizeValidationError') {
-    const message = Object.values(err.errors).map(val => val.message).join(', ');
-    error = {
-      statusCode: 400,
-      message: `Validation Error: ${message}`
-    };
+    return res.status(400).json({
+      success: false,
+      message: 'Validation error',
+      errors: err.errors.map(error => ({
+        field: error.path,
+        message: error.message,
+        value: error.value
+      }))
+    });
   }
 
-  // Sequelize unique constraint error
+  // Sequelize unique constraint errors
   if (err.name === 'SequelizeUniqueConstraintError') {
-    const field = err.errors[0].path;
-    error = {
-      statusCode: 400,
-      message: `${field.charAt(0).toUpperCase() + field.slice(1)} already exists`
-    };
+    return res.status(400).json({
+      success: false,
+      message: 'Duplicate entry',
+      errors: err.errors.map(error => ({
+        field: error.path,
+        message: `${error.path} already exists`,
+        value: error.value
+      }))
+    });
   }
 
-  // Sequelize foreign key constraint error
+  // Sequelize foreign key constraint errors
   if (err.name === 'SequelizeForeignKeyConstraintError') {
-    error = {
-      statusCode: 400,
-      message: 'Referenced record does not exist'
-    };
+    return res.status(400).json({
+      success: false,
+      message: 'Referenced record does not exist',
+      field: err.fields[0]
+    });
   }
 
   // JWT errors
   if (err.name === 'JsonWebTokenError') {
-    error = {
-      statusCode: 401,
+    return res.status(401).json({
+      success: false,
       message: 'Invalid token'
-    };
+    });
   }
 
   if (err.name === 'TokenExpiredError') {
-    error = {
-      statusCode: 401,
+    return res.status(401).json({
+      success: false,
       message: 'Token expired'
-    };
+    });
   }
 
   // Multer file upload errors
   if (err.code === 'LIMIT_FILE_SIZE') {
-    error = {
-      statusCode: 400,
-      message: 'File size too large. Maximum size is 5MB'
-    };
+    return res.status(400).json({
+      success: false,
+      message: 'File too large'
+    });
+  }
+
+  if (err.code === 'LIMIT_FILE_COUNT') {
+    return res.status(400).json({
+      success: false,
+      message: 'Too many files'
+    });
   }
 
   if (err.code === 'LIMIT_UNEXPECTED_FILE') {
-    error = {
-      statusCode: 400,
+    return res.status(400).json({
+      success: false,
       message: 'Unexpected file field'
-    };
+    });
   }
 
-  // Default error
-  res.status(error.statusCode || 500).json({
+  // Rate limit errors
+  if (err.status === 429) {
+    return res.status(429).json({
+      success: false,
+      message: 'Too many requests, please try again later'
+    });
+  }
+
+  // Default error response
+  const statusCode = err.statusCode || 500;
+  const message = err.message || 'Internal server error';
+
+  res.status(statusCode).json({
     success: false,
-    message: error.message || 'Internal Server Error',
+    message,
     ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
   });
 };
 
-module.exports = { errorHandler }; 
+module.exports = {
+  errorHandler
+}; 

@@ -9,21 +9,17 @@ const swaggerSpecs = require('./config/swagger');
 require('dotenv').config();
 
 const { sequelize, syncModels } = require('./models');
-const authRoutes = require('./routes/auth');
-// const userRoutes = require('./routes/users');
-// const itemRoutes = require('./routes/items');
-// const swapRoutes = require('./routes/swaps');
-const adminRoutes = require('./routes/admin');
+const routes = require('./routes');
 const { errorHandler } = require('./middleware/errorHandler');
-const { authMiddleware } = require('./middleware/auth');
+const { validateRequest, sanitizeRequest } = require('./middleware/validation');
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3456;
 
 // Security middleware
 app.use(helmet());
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: process.env.FRONTEND_URL || 'http://localhost:3003',
   credentials: true
 }));
 
@@ -31,7 +27,10 @@ app.use(cors({
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many requests from this IP, please try again later.'
+  message: {
+    success: false,
+    message: 'Too many requests from this IP, please try again later.'
+  }
 });
 app.use('/api/', limiter);
 
@@ -41,14 +40,19 @@ app.use(morgan('combined'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
-    message: 'ReWear API is running',
-    timestamp: new Date().toISOString()
-  });
-});
+// Global middleware
+app.use(sanitizeRequest);
+
+// Create uploads directory if it doesn't exist
+const fs = require('fs');
+const path = require('path');
+const uploadsDir = path.join(__dirname, 'public/uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Serve static files from uploads directory
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 // Swagger API documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs, {
@@ -58,11 +62,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs, {
 }));
 
 // API Routes
-app.use('/api/auth', authRoutes);
-// app.use('/api/users', authMiddleware, userRoutes);
-// app.use('/api/items', itemRoutes);
-// app.use('/api/swaps', authMiddleware, swapRoutes);
-app.use('/api/admin', adminRoutes);
+app.use('/api', routes);
 
 // Error handling middleware
 app.use(errorHandler);
@@ -71,7 +71,9 @@ app.use(errorHandler);
 app.use('*', (req, res) => {
   res.status(404).json({ 
     success: false, 
-    message: 'Route not found' 
+    message: 'Route not found',
+    path: req.originalUrl,
+    method: req.method
   });
 });
 
@@ -79,19 +81,22 @@ app.use('*', (req, res) => {
 const startServer = async () => {
   try {
     await sequelize.authenticate();
-    console.log('✅ Database connection established successfully.');
+    console.log('Database connection established successfully.');
     
     // Sync database (in development)
     if (process.env.NODE_ENV === 'development') {
       await syncModels();
+      console.log('Database models synchronized.');
     }
     
     app.listen(PORT, () => {
-      console.log(`🚀 ReWear server running on port ${PORT}`);
-      console.log(`📱 Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(` ReWear server running on port ${PORT}`);
+      console.log(` Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`API Documentation: http://localhost:${PORT}/api-docs`);
+      console.log(`Health Check: http://localhost:${PORT}/api/health`)
     });
   } catch (error) {
-    console.error('❌ Unable to start server:', error);
+    console.error('Unable to start server:', error);
     process.exit(1);
   }
 };
